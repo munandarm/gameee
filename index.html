@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kuis Edukasi Level</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b') no-repeat center center fixed;
+      background-size: cover;
+      backdrop-filter: brightness(0.9);
+      color: #fff;
+      border-radius: 10px;
+      position: relative;
+      min-height: 100vh;
+      box-sizing: border-box;
+      padding-bottom: 80px;
+    }
+    h1, h2 {
+      text-align: center;
+      text-shadow: 1px 1px 3px #000;
+    }
+    .question {
+      font-size: 1.2em;
+      margin-bottom: 15px;
+      text-shadow: 1px 1px 2px #000;
+    }
+    .answers button {
+      display: block;
+      width: 100%;
+      margin: 8px 0;
+      padding: 10px;
+      font-size: 1em;
+      cursor: pointer;
+      background-color: #ffffffcc;
+      border: none;
+      border-radius: 5px;
+      color: #000;
+    }
+    .answers button:hover {
+      background-color: #ddd;
+    }
+    .timer {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-align: center;
+      background-color: #00000088;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .score {
+      font-size: 1.2em;
+      margin-top: 20px;
+      text-align: center;
+      text-shadow: 1px 1px 2px #000;
+    }
+    .hide {
+      display: none;
+    }
+    footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #1c1f26;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      font-size: 0.9em;
+    }
+    .highscore {
+      margin-top: 10px;
+      font-size: 1em;
+      color: #ff0;
+      text-shadow: 1px 1px 2px #000;
+    }
+  </style>
+</head>
+<body>
+  <h1>Kuis Edukasi</h1>
+  <h2 id="level-title">Level 1</h2>
+  <div class="timer">Waktu tersisa: <span id="time">60</span> detik</div>
+  <div id="quiz-container">
+    <div class="question" id="question">Memuat soal...</div>
+    <div class="answers" id="answers"></div>
+  </div>
+  <div class="score hide" id="score-container">
+    Skor kamu: <span id="score"></span> dari <span id="total"></span> soal.<br />
+    <div class="highscore" id="highscore-info">Highscore: 0</div>
+    <button onclick="startQuiz()">Main Lagi</button>
+    <button onclick="resetHighscore()">Reset Highscore</button>
+    <button id="next-level-btn" class="hide" onclick="goToNextLevel()">Lanjut ke Level Berikutnya</button>
+  </div>
+  <footer>© 2025 Haris Munandar XI-RPL</footer>
+  <audio id="beep" src="https://www.soundjay.com/button/beep-07.mp3" preload="auto"></audio>
+
+  <script>
+    const questions = [
+      // Total 50 soal, isi lengkap dari jawaban sebelumnya...
+      { question: "Apa ibu kota Indonesia?", answers: ["Jakarta", "Bandung", "Surabaya", "Medan"], correct: 0 },
+      { question: "Berapa hasil dari 8 x 7?", answers: ["54", "56", "64", "48"], correct: 1 },
+      { question: "Penulis 'Laskar Pelangi' adalah?", answers: ["Andrea Hirata", "Pramoedya", "Tere Liye", "Dee"], correct: 0 },
+      { question: "Proses membuat makanan pada tumbuhan?", answers: ["Respirasi", "Fotosintesis", "Fermentasi", "Evaporasi"], correct: 1 },
+      { question: "Planet terdekat dengan Matahari?", answers: ["Venus", "Mars", "Merkurius", "Jupiter"], correct: 2 },
+      { question: "Presiden pertama Indonesia?", answers: ["Soekarno", "Soeharto", "Jokowi", "Habibie"], correct: 0 },
+      { question: "Bahasa web utama?", answers: ["Python", "HTML", "C++", "Java"], correct: 1 },
+      { question: "Satuan gaya adalah?", answers: ["Watt", "Joule", "Newton", "Ohm"], correct: 2 },
+      { question: "Warna merah pada bendera artinya?", answers: ["Berani", "Sabar", "Cinta", "Adil"], correct: 0 },
+      { question: "Gunung tertinggi di Indonesia?", answers: ["Semeru", "Rinjani", "Jayawijaya", "Kerinci"], correct: 2 },
+      { question: "Apa nama ibu kota Jepang?", answers: ["Tokyo", "Kyoto", "Osaka", "Nagoya"], correct: 0 },
+      { question: "Berapa jumlah provinsi di Indonesia (2024)?", answers: ["34", "36", "38", "40"], correct: 2 },
+      { question: "Siapa penemu bola lampu?", answers: ["Newton", "Einstein", "Edison", "Tesla"], correct: 2 },
+      { question: "Simbol kimia dari air?", answers: ["CO2", "H2O", "NaCl", "O2"], correct: 1 },
+      { question: "Rumus luas segitiga?", answers: ["a x b", "1/2 x a x t", "πr²", "s x s"], correct: 1 },
+      { question: "Siapa penemu gravitasi?", answers: ["Edison", "Newton", "Einstein", "Galileo"], correct: 1 },
+      { question: "Ibukota Kalimantan Timur?", answers: ["Samarinda", "Balikpapan", "Banjarmasin", "Pontianak"], correct: 0 },
+      { question: "Hewan pemakan tumbuhan disebut?", answers: ["Karnivora", "Omnivora", "Herbivora", "Insektivora"], correct: 2 },
+      { question: "Bentuk bumi adalah?", answers: ["Datar", "Kotak", "Bulat", "Segitiga"], correct: 2 },
+      { question: "Hewan berkaki dua dan bisa terbang?", answers: ["Ikan", "Burung", "Katak", "Kuda"], correct: 1 },
+      { question: "Apa nama planet terbesar?", answers: ["Bumi", "Mars", "Saturnus", "Jupiter"], correct: 3 },
+      { question: "Rumus keliling persegi?", answers: ["s x s", "4 x s", "2 x (p + l)", "πd"], correct: 1 },
+      { question: "Apa arti warna putih pada bendera?", answers: ["Berani", "Kesucian", "Cinta", "Persatuan"], correct: 1 },
+      { question: "Sungai terpanjang di dunia?", answers: ["Amazon", "Nil", "Mississippi", "Yangtze"], correct: 1 },
+      { question: "Gunung aktif di Jawa Timur?", answers: ["Slamet", "Merapi", "Bromo", "Rinjani"], correct: 2 },
+      { question: "Alat musik tradisional dari Jawa?", answers: ["Sasando", "Gamelan", "Tifa", "Angklung"], correct: 1 },
+      { question: "Nama ilmiah manusia?", answers: ["Homo erectus", "Homo sapiens", "Neanderthal", "Primata"], correct: 1 },
+      { question: "Benda langit penghasil cahaya sendiri?", answers: ["Bulan", "Bintang", "Planet", "Meteor"], correct: 1 },
+      { question: "Siapa penemu telepon?", answers: ["Edison", "Bell", "Tesla", "Jobs"], correct: 1 },
+      { question: "Hari Kemerdekaan RI?", answers: ["17 Agustus 1945", "1 Juni 1945", "10 November 1945", "20 Mei 1945"], correct: 0 },
+      { question: "Apa lambang negara Indonesia?", answers: ["Burung Merpati", "Burung Elang", "Garuda", "Rajawali"], correct: 2 },
+      { question: "Zat yang dibutuhkan tumbuhan untuk fotosintesis?", answers: ["Oksigen", "Nitrogen", "Karbon Dioksida", "Helium"], correct: 2 },
+      { question: "Satuan dari massa?", answers: ["Meter", "Liter", "Kilogram", "Newton"], correct: 2 },
+      { question: "Alat optik untuk melihat bintang?", answers: ["Teleskop", "Mikroskop", "Teropong", "Periskop"], correct: 0 },
+      { question: "Contoh perubahan kimia?", answers: ["Air membeku", "Kertas terbakar", "Es mencair", "Besi meleleh"], correct: 1 },
+      { question: "Apa itu atmosfer?", answers: ["Laut", "Langit", "Lapisan udara", "Batuan"], correct: 2 },
+      { question: "Bilangan prima terkecil?", answers: ["1", "2", "3", "5"], correct: 1 },
+      { question: "Jenis energi matahari?", answers: ["Listrik", "Panas", "Kimia", "Kinetik"], correct: 1 },
+      { question: "Nama alat ukur suhu?", answers: ["Barometer", "Voltmeter", "Termometer", "Amperemeter"], correct: 2 },
+      { question: "Perubahan wujud gas ke cair?", answers: ["Menguap", "Mengkristal", "Mengembun", "Mencair"], correct: 2 },
+      { question: "Apa lambang dari oksigen?", answers: ["Ox", "O2", "O", "Ox2"], correct: 2 },
+      { question: "Sumber energi tak terbarukan?", answers: ["Angin", "Air", "Batu bara", "Matahari"], correct: 2 },
+      { question: "Hasil dari 12 x 12?", answers: ["124", "144", "132", "120"], correct: 1 },
+      { question: "Apa fungsi akar pada tumbuhan?", answers: ["Menarik matahari", "Menyerap air", "Menyerap udara", "Menarik hama"], correct: 1 },
+      { question: "Negara dengan populasi terbanyak?", answers: ["India", "China", "AS", "Indonesia"], correct: 1 },
+      { question: "Apa warna pelangi ke-3 dari atas?", answers: ["Merah", "Oranye", "Kuning", "Hijau"], correct: 2 },
+      { question: "Contoh hewan mamalia?", answers: ["Ayam", "Ular", "Ikan", "Kambing"], correct: 3 },
+      { question: "Fungsi daun pada tumbuhan?", answers: ["Menyerap cahaya", "Mencari air", "Membungkus buah", "Melindungi akar"], correct: 0 },
+      { question: "Contoh bahan magnetik?", answers: ["Kertas", "Kaca", "Besi", "Plastik"], correct: 2 },
+      { question: "Simbol bilangan Romawi X adalah?", answers: ["5", "10", "50", "100"], correct: 1 },
+    ];
+
+    let currentLevel = 1;
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timeLeft = 60;
+    let timerInterval;
+
+    const levelTitle = document.getElementById("level-title");
+    const questionEl = document.getElementById("question");
+    const answersEl = document.getElementById("answers");
+    const timeEl = document.getElementById("time");
+    const scoreContainer = document.getElementById("score-container");
+    const scoreEl = document.getElementById("score");
+    const totalEl = document.getElementById("total");
+    const quizContainer = document.getElementById("quiz-container");
+    const beepSound = document.getElementById("beep");
+    const nextLevelBtn = document.getElementById("next-level-btn");
+    const highscoreInfo = document.getElementById("highscore-info");
+
+    function startQuiz() {
+      currentLevel = 1;
+      score = 0;
+      showLevel(currentLevel);
+    }
+
+    function showLevel(level) {
+      levelTitle.textContent = `Level ${level}`;
+      currentQuestionIndex = (level - 1) * 5;
+      timeLeft = 60;
+      scoreContainer.classList.add("hide");
+      quizContainer.classList.remove("hide");
+      nextLevelBtn.classList.add("hide");
+      timeEl.textContent = timeLeft;
+      showQuestion();
+      startTimer();
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        beepSound.play();
+        timeLeft--;
+        timeEl.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          nextLevelOrEnd();
+        }
+      }, 1000);
+    }
+
+    function showQuestion() {
+      if (currentQuestionIndex >= currentLevel * 5) {
+        nextLevelOrEnd();
+        return;
+      }
+      const q = questions[currentQuestionIndex];
+      questionEl.textContent = q.question;
+      answersEl.innerHTML = "";
+      q.answers.forEach((answer, index) => {
+        const btn = document.createElement("button");
+        btn.textContent = answer;
+        btn.onclick = () => selectAnswer(index);
+        answersEl.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(selectedIndex) {
+      const correctIndex = questions[currentQuestionIndex].correct;
+      if (selectedIndex === correctIndex) score++;
+      currentQuestionIndex++;
+      showQuestion();
+    }
+
+    function nextLevelOrEnd() {
+      clearInterval(timerInterval);
+      quizContainer.classList.add("hide");
+      scoreContainer.classList.remove("hide");
+      scoreEl.textContent = score;
+      totalEl.textContent = currentLevel * 5;
+
+      updateHighscore(score);
+
+      if (currentLevel < 10) {
+        nextLevelBtn.classList.remove("hide");
+      } else {
+        nextLevelBtn.classList.add("hide");
+      }
+    }
+
+    function goToNextLevel() {
+      currentLevel++;
+      nextLevelBtn.classList.add("hide");
+      showLevel(currentLevel);
+    }
+
+    function updateHighscore(newScore) {
+      const currentHigh = localStorage.getItem("highscore") || 0;
+      if (newScore > currentHigh) {
+        localStorage.setItem("highscore", newScore);
+      }
+      highscoreInfo.textContent = "Highscore: " + localStorage.getItem("highscore");
+    }
+
+    function resetHighscore() {
+      localStorage.removeItem("highscore");
+      highscoreInfo.textContent = "Highscore: 0";
+    }
+
+    window.onload = () => {
+      startQuiz();
+      highscoreInfo.textContent = "Highscore: " + (localStorage.getItem("highscore") || 0);
+    };
+  </script>
+</body>
+</html>
